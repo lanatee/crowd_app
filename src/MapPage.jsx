@@ -19,7 +19,7 @@ const levelColor = (lvl) => {
       return "#444";
   }
 };
-
+const API_BASE = process.env.REACT_APP_API_BASE_URL || "https://crowdservice-seoul.onrender.com";
 const KAKAO_APP_KEY = "4be286df1e9ff528c5bc9a5cdbf1303e"; // 필요시 .env로 이동
 
 export default function MapPage() {
@@ -111,7 +111,7 @@ export default function MapPage() {
 
         // 🔔 API 호출 (프록시 사용 시 상대경로 /congestion)
         axios
-          .get("/congestion")
+          .get(`${API_BASE}/congestion`)
           .then((res) => {
             const data = res.data;
             if (!data?.ok || !Array.isArray(data.items)) {

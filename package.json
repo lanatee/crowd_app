@@ -2,7 +2,7 @@
   "name": "crowd-map",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://crowdservice-seoul.onrender.com",
+  //"proxy": "https://crowdservice-seoul.onrender.com",
   "dependencies": {
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.4",
