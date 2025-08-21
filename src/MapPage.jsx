@@ -67,6 +67,48 @@ export default function MapPage() {
         };
 
         // 마커 렌더
+        // const renderMarkers = (items) => {
+        //   clearMarkers();
+
+        //   let shown = 0;
+        //   items.forEach((spot) => {
+        //     const lat = Number(spot.lat);
+        //     const lng = Number(spot.lon);
+        //     if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+        //     const pos = new window.kakao.maps.LatLng(lat, lng);
+        //     const marker = new window.kakao.maps.Marker({ position: pos, map, title: spot.name });
+
+        //     const html = `
+        //       <div style="min-width:220px;padding:8px;font-family:-apple-system,Segoe UI,Roboto,Noto Sans KR,sans-serif">
+        //         <div style="font-weight:700;margin-bottom:4px">${escapeHtml(spot.name || "")}</div>
+        //         <div style="font-size:12px;color:#555">혼잡도:
+        //           <span style="color:${levelColor(spot.area_congest_lvl)};font-weight:700">
+        //             ${escapeHtml(spot.area_congest_lvl || "")}
+        //           </span>
+        //         </div>
+        //         <div style="font-size:12px;color:#555">
+        //           추정 인원: ${Number(spot.area_ppltn_min || 0).toLocaleString()} ~ ${Number(spot.area_ppltn_max || 0).toLocaleString()}
+        //         </div>
+        //         <div style="font-size:11px;color:#888;margin-top:4px">
+        //           업데이트: ${escapeHtml(spot.updated_at || "")}
+        //         </div>
+        //       </div>
+        //     `;
+
+        //     window.kakao.maps.event.addListener(marker, "click", () => {
+        //       info.setContent(html);     // 내용 교체
+        //       info.open(map, marker);    // 하나만 열림(기존은 자동 대체)
+        //       // map.setCenter(pos);     // 필요하면 주석 해제해 클릭 시 중앙 이동
+        //     });
+
+        //     markersRef.current.push(marker);
+        //     shown++;
+        //   });
+
+        //   setStatusMsg(`✅ 혼잡도 ${shown}개 불러오기 성공`);
+        // };
+
         const renderMarkers = (items) => {
           clearMarkers();
 
@@ -79,6 +121,31 @@ export default function MapPage() {
             const pos = new window.kakao.maps.LatLng(lat, lng);
             const marker = new window.kakao.maps.Marker({ position: pos, map, title: spot.name });
 
+            // 🔹 fcst HTML 추가
+            let fcstHtml = "";
+            if (Array.isArray(spot.fcst) && spot.fcst.length > 0) {
+              fcstHtml = `
+                <div style="font-size:11px;color:#555;margin-top:6px;">
+                  <strong>예측 혼잡도</strong>
+                  <ul style="margin:4px 0 0 0;padding:0;list-style:none;max-height:120px;overflow-y:auto;">
+                    ${spot.fcst
+                      .map(
+                        (f) => `
+                        <li style="margin-bottom:2px;">
+                          ${new Date(f.fcst_time).getHours()}시 :
+                          <span style="color:${levelColor(f.fcst_congest_lvl)};font-weight:700">
+                            ${escapeHtml(f.fcst_congest_lvl)}
+                          </span>
+                          (${Number(f.fcst_ppltn_min).toLocaleString()} ~ ${Number(f.fcst_ppltn_max).toLocaleString()})
+                        </li>`
+                      )
+                      .join("")}
+                  </ul>
+                </div>
+              `;
+            }
+
+            // 🔹 원래 html + fcstHtml 추가
             const html = `
               <div style="min-width:220px;padding:8px;font-family:-apple-system,Segoe UI,Roboto,Noto Sans KR,sans-serif">
                 <div style="font-weight:700;margin-bottom:4px">${escapeHtml(spot.name || "")}</div>
@@ -93,13 +160,13 @@ export default function MapPage() {
                 <div style="font-size:11px;color:#888;margin-top:4px">
                   업데이트: ${escapeHtml(spot.updated_at || "")}
                 </div>
+                ${fcstHtml}
               </div>
             `;
 
             window.kakao.maps.event.addListener(marker, "click", () => {
               info.setContent(html);     // 내용 교체
-              info.open(map, marker);    // 하나만 열림(기존은 자동 대체)
-              // map.setCenter(pos);     // 필요하면 주석 해제해 클릭 시 중앙 이동
+              info.open(map, marker);    // 하나만 열림
             });
 
             markersRef.current.push(marker);
@@ -110,8 +177,8 @@ export default function MapPage() {
         };
 
         // 🔔 API 호출 (프록시 사용 시 상대경로 /congestion)
-        axios
-          .get(`${API_BASE}/congestion`)
+        axios.get(`${API_BASE}/congestion?include_fcst=true`)
+        //axios.get("/congestion?include_fcst=true")
           .then((res) => {
             const data = res.data;
             if (!data?.ok || !Array.isArray(data.items)) {
@@ -139,6 +206,9 @@ export default function MapPage() {
       document.head.removeChild(script);
     };
   }, []);
+
+  
+
 
   return (
     <div>
