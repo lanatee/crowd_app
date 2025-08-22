@@ -211,10 +211,12 @@ export default function MapPage() {
 
 
   return (
-    <div>
-      <h1>서울 관광지 혼잡도 지도</h1>
-      <p style={{ margin: "8px 0", fontSize: 14, color: "#555" }}>{statusMsg}</p>
-      <div id="map" style={{ width: "100%", height: "600px" }} />
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column" }}>
+      <h1 style={{ margin: "12px 0 4px" }}>서울 관광지 혼잡도 지도</h1>
+      <p style={{ margin: "0 0 8px", fontSize: 14, color: "#555" }}>{statusMsg}</p>
+
+      {/* 지도는 남은 높이 전부 */}
+      <div id="map" style={{ flex: "1 1 auto", width: "100%" }} />
     </div>
   );
 }
